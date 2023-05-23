@@ -55,18 +55,28 @@ damy_dic2 = {
     ]
 }
 
+# a1 = MongoDB("praying")
+# list_of_dicts = a1.read({"phone":"5555555"})
+# # print(list_of_dicts)
+# for dict in list_of_dicts:
+#     if dict["name"]=="adele":
+#         print(f"{dict}")
+#     else:
+#         print("not found")
+    
+# a1 = MongoDB("users")
+# query = {"phone":"5555555"}
+# data = a1.read(query)
+# print(data[0])
+# return jsonify(data[0])
+# docs = a1.read({'name': 'adele'})
+# print(docs)
 
-a1 = MongoDB("deceased")
-a1.create(damy_dic2)
 
-docs = a1.read({'name': 'Jon'})
-print(docs)
-
-
-query = {'name': 'Jon'}
-new_data = {'$set': {'email': 'new_email@example.com'}}
-
-result = a1.update(filter, new_data)
+# query = {'phone': '5555555'}
+# a1.delete(query)
+# new_values = {"$set": {'lastname': 'shofan'}}
+# a1.replace(query, new_values)
 
 
 # my_dict = {
