@@ -25,35 +25,51 @@ class MongoDB:
 damy_dic1 = {
     "name": "adele",
     "lastname": "keinan",
-    "email": "yk3823",
-    "phone": "0546565236",
+    "email": "adelekeinan@gmail.com",
+    "phone": "0535319985",
     "date": "01/02/2023",
     "reletives": [{
-            "name": "Alice",
+            "name": "yosef",
             "relationid": "123"
     },
         {
-            "name": "Bob",
+            "name": "hava",
             "relationid": "4646"
     },
         {
-            "name": "Charlie",
-            "relationid": "Brother"
+            "name": "rivka",
+            "relationid": "111"
     }]
 
 }
 damy_dic2 = {
-    "name": "Jon",
-    "lastname": "Don",
-    "email": "jd1234@example.com",
-    "phone": "0123456789",
+    "name": "Rout",
+    "lastname": "tzadok",
+    "email": "rt123@example.com",
+    "phone": "0523456789",
     "date": "01/03/2023",
     "relatives": [
-        {"name": "Jane", "relationid": "321"},
-        {"name": "Bob", "relationid": "654"},
-        {"name": "Charlie", "relationid": "987"}
+        {"name": "Avi", "relationid": "321"},
+        {"name": "Yvi", "relationid": "654"},
+        {"name": "Zvi", "relationid": "987"}
     ]
 }
+mongo = MongoDB(collection="users")
+
+# Create user1
+user1_id = mongo.create(damy_dic1)
+for relative in damy_dic1["reletives"]:
+    relative['user_id'] = str(user1_id) # MongoDB's ObjectIds need to be converted to string before storing
+    mongo.create(relative)
+
+# Create user2
+user2_id = mongo.create(damy_dic2)
+for relative in damy_dic2["relatives"]:
+    relative['user_id'] = str(user2_id) # MongoDB's ObjectIds need to be converted to string before storing
+    mongo.create(relative)
+
+
+
 
 # a1 = MongoDB("praying")
 # list_of_dicts = a1.read({"phone":"5555555"})
