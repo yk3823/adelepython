@@ -28,18 +28,11 @@ damy_dic1 = {
     "email": "adelekeinan@gmail.com",
     "phone": "0535319985",
     "date": "01/02/2023",
-    "reletives": [{
-            "name": "yosef",
-            "relationid": "123"
-    },
-        {
-            "name": "hava",
-            "relationid": "4646"
-    },
-        {
-            "name": "rivka",
-            "relationid": "111"
-    }]
+    "reletives": [
+        {"name": "yosef", "relationid": "123"},
+        {"name": "hava", "relationid": "4646"},
+        {"name": "rivka", "relationid": "111"}
+    ]
 
 }
 damy_dic2 = {
@@ -56,16 +49,16 @@ damy_dic2 = {
 }
 mongo = MongoDB(collection="users")
 
-# Create user1
+
 user1_id = mongo.create(damy_dic1)
 for relative in damy_dic1["reletives"]:
-    relative['user_id'] = str(user1_id) # MongoDB's ObjectIds need to be converted to string before storing
+    relative['user_id'] = str(user1_id) 
     mongo.create(relative)
 
-# Create user2
+
 user2_id = mongo.create(damy_dic2)
 for relative in damy_dic2["relatives"]:
-    relative['user_id'] = str(user2_id) # MongoDB's ObjectIds need to be converted to string before storing
+    relative['user_id'] = str(user2_id) 
     mongo.create(relative)
 
 
