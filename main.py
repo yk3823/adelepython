@@ -29,7 +29,12 @@ def create():
 
     # data[key] = value
     # return jsonify({"message": f"{key} has been created."}), 201
-
+@app.route('/emailverified', methods=['GET'])
+def mail():
+    
+    
+        
+    return jsonify({"ok":"document has been created!!"}), 200 
 @app.route('/read', methods=['GET'])
 def read():
     # key = request.args.get('key')
