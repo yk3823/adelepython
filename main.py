@@ -25,13 +25,19 @@ def create():
     a1 = MongoDB("users")
     b1 = Email(data["email"],"adelekeinan@gmail.com","ukwdpyraorxbqcsr")
     c1 = Message(data["email"],"hello").getMessage()
-    b1.send_email("Hello welcome to adele website",c1["message"])
+    b1.send_email(c1["subject"],c1["message"])
     a1.create(data)
 
     # b1 = mainEmail.Email(data["email"],"adelekeinan@gmail.com","ukwdpyraorxbqcsr")
     
         
     return jsonify({"ok":"document has been created!!"}), 200 
+@app.route('/emailverified/<token>', methods=['GET'])
+def verify_email(token):
+    email = token
+    a1 = MongoDB("users")
+    a1.update({"email":email},{"user_verified": True })
+    return jsonify({"message": f"Email has been verified with token {token}!"}), 200
     # if not request.json:
     #     return jsonify({"error": "No data sent"}), 400
 
