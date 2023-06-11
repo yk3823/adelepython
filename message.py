@@ -18,7 +18,7 @@ class Message:
         <html>
         <body>
             <p>Hi ADELE,<br>
-            IT IS A TEST FOR ME!<br>
+            TEST FOR ME!<br>
                 <a href="http://localhost:5020/emailverified/{self.email}">Click Here</a> 
             </p>
         </body>
