@@ -22,12 +22,12 @@ class User:
 
 
 class Deceased:
-    def __init__(self, fullname: str, date_of_birth: datetime, date_of_death: datetime, date_death_year: datetime, date_death_11month: datetime, user_id: str):
+    def __init__(self, fullname: str, date_of_death: datetime, date_next: datetime, date_reminder: datetime, user_id: str):
         self.deceased_id = uuid.uuid4().hex
         self.fullname = fullname
         self.date_of_death = date_of_death
-        self.date_death_year = date_death_year
-        self.date_death_11month = date_death_11month
+        self.date_next = date_next
+        self.date_reminder = date_reminder
         self.user_id = user_id
         self.created_at = datetime.datetime.utcnow()
 

@@ -1,18 +1,79 @@
 from flask import Flask, request, jsonify
 from databaseMain import MongoDB
-from bson import json_util 
+from bson import json_util
 import json
 from sendemail import Email
 from message import Message
+from date import userDate
+from datetime import datetime
+import uuid
+from pymongo import MongoClient
 
 
+# def main():
+#     d = userDate(2010, 6, 2)
+#     d.print_dates()
+#     next_date = d.get_next_date()
+#     d.print_reminder(next_date)
 
 
+# if __name__ == "__main__":
+#     main()
+client = MongoClient('localhost', 27017)
+db = client['memorial_site']
+collection = db['deceased']
 app = Flask(__name__)
-
-# Storing data in a dictionary for simplicity. 
-# In a real-world application, you would typically use a database.
 data = {}
+
+
+@app.route('/userdate', methods=['POST'])
+def userdate():
+    if not request.json:
+        return jsonify({"error": "No data sent"}), 400
+    data = request.get_json()
+    fullname = data.get('fullname')
+    date_of_death = data.get('date_of_death')
+    date_next = data.get('date_next')
+    date_reminder = data.get('date_reminder')
+    user_id = data.get('user_id')
+    if None in [fullname, date_of_death, date_next, date_reminder, user_id]:
+        return jsonify({"error": "Missing data fields"}), 400
+    try:
+        date_of_death = datetime.strptime(date_of_death, '%Y-%m-%d')
+        date_next = datetime.strptime(date_next, '%Y-%m-%d')
+        date_reminder = datetime.strptime(date_reminder, '%Y-%m-%d')
+    except ValueError:
+        return jsonify({"error": "Invalid date format"}), 400
+    deceased_id = uuid.uuid4().hex
+    doc = {
+        'deceased_id': deceased_id,
+        'fullname': fullname,
+        'date_of_death': date_of_death,
+        'date_next': date_next,
+        'date_reminder': date_reminder,
+        'user_id': user_id,
+        'created_at': datetime.utcnow()
+    }
+    collection.insert_one(doc)
+
+    # datetime_str = data.get('datetime1')
+    # print(datetime_str)
+
+    # if datetime_str is None or datetime_str == "":
+    #     return jsonify({"error": "Invalid datetime format"}), 400
+
+    # try:
+    #     datetime_obj = datetime.strptime(str(datetime_str), '%Y-%m-%d')
+    # except ValueError:
+    #     return jsonify({"error": "Invalid datetime format"}), 400
+
+    # d = userDate(datetime_obj.year, datetime_obj.month, datetime_obj.day)
+    # d.print_dates()
+    # next_date = d.get_next_date()
+    # d.print_reminder(next_date)
+
+    return jsonify({"message": "deceased date processed"}), 200
+
 
 @app.route('/create', methods=['POST'])
 def create():
@@ -23,21 +84,27 @@ def create():
     # print(data["user_verified"])
     print(data["email"])
     a1 = MongoDB("users")
-    b1 = Email(data["email"],"adelekeinan@gmail.com","ukwdpyraorxbqcsr")
-    c1 = Message(data["email"],"hello").getMessage()
-    b1.send_email(c1["subject"],c1["message"])
+    b1 = Email(data["email"], "adelekeinan@gmail.com", "ukwdpyraorxbqcsr")
+    d1 = userDate()
+    c1 = Message(data["email"], "hello").getMessage()
+    b1.send_email(c1["subject"], c1["message"])
     a1.create(data)
 
     # b1 = mainEmail.Email(data["email"],"adelekeinan@gmail.com","ukwdpyraorxbqcsr")
-    
-        
-    return jsonify({"ok":"document has been created!!"}), 200 
+
+    return jsonify({"ok": "document has been created!!"}), 200
+
+
 @app.route('/emailverified/<token>', methods=['GET'])
 def verify_email(token):
     email = token
     a1 = MongoDB("users")
-    a1.update({"email":email},{"user_verified": True })
+    a1.update({"email": email}, {"user_verified": True})
     return jsonify({"message": f"Email has been verified with token {token}!"}), 200
+
+
+if __name__ == '__main__':
+    app.run(debug=True, host='0.0.0.0', port=5020)
     # if not request.json:
     #     return jsonify({"error": "No data sent"}), 400
 
@@ -51,24 +118,22 @@ def verify_email(token):
     # return jsonify({"message": f"{key} has been created."}), 201
 # @app.route('/emailverified', methods=['GET'])
 # def mail():
-    
-    
-        
-#     return jsonify({"ok":"document has been created!!"}), 200 
+
+
+#     return jsonify({"ok":"document has been created!!"}), 200
 # @app.route('/read', methods=['GET'])
 # def read():
 #     # key = request.args.get('key')
-    
+
 #     query = {"phone":"5555555"}
-    
+
 #     data = a1.read(query)
 #     # Use json_util.dumps to convert ObjectId to string
-#     # json.loads takes string and makes it a python object 
+#     # json.loads takes string and makes it a python object
 #     data_json = json.loads(json_util.dumps(data))
-#     #jsonify - python and converts it to json 
+#     #jsonify - python and converts it to json
 #     return jsonify(data_json)
 
-    
 
 # @app.route('/update', methods=['PATCH'])
 # def update():
@@ -90,9 +155,5 @@ def verify_email(token):
 
 #     if key not in data:
 #         return jsonify({"error": "Key not found"}), 404
-
 #     del data[key]
 #     return jsonify({"message": f"{key} has been deleted."}), 200
-
-if __name__ == '__main__':
-    app.run(debug=True, host='0.0.0.0', port=5020)
