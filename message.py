@@ -30,6 +30,6 @@ class Message:
 # a1.send_email(subject,message)
 
 ##### Test ######
-a1 = Message("yk3823@gmail.com","hekko").getMessage()
-print(a1)
+# a1 = Message("yk3823@gmail.com","hekko").getMessage()
+# print(a1)
 

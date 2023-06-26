@@ -33,6 +33,7 @@ class Email:
 
         except Exception as e:
             print(f"An error occurred: {e}")
+    
 #### Test ####
 # a1 = Email("adelkenan53@gmail.com","adelekeinan@gmail.com","ukwdpyraorxbqcsr")
 # a1.send_email("subject","hello")
