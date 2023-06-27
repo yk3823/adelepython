@@ -12,12 +12,14 @@ from flask_cors import CORS
 
 
 
+
 client = MongoClient('localhost', 27017)
 db = client['memorial_site']
 collection = db['deceased']
 app = Flask(__name__)
 CORS(app)
 data = {}
+
 
 
 @app.route('/userdate', methods=['POST'])
