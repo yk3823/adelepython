@@ -102,6 +102,8 @@ def verify_email(token):
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=5020)
+
+
     # def main():
 #     d = userDate(2010, 6, 2)
 #     d.print_dates()
