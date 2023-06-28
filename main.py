@@ -9,6 +9,8 @@ from datetime import datetime
 import uuid
 from pymongo import MongoClient
 from flask_cors import CORS
+from bson.objectid import ObjectId
+
 
 
 
@@ -16,30 +18,48 @@ from flask_cors import CORS
 client = MongoClient('localhost', 27017)
 db = client['memorial_site']
 collection = db['deceased']
+mongo = MongoDB(collection="users")
 app = Flask(__name__)
 CORS(app)
 data = {}
 
 
+@app.route('/create_images_collection', methods=['POST'])
+def create_images_collection():
+    mongo.create_images_collection()
+    return jsonify({"message": "Images collection created"}), 200
+
+
+@app.route('/upload_image', methods=['POST'])
+def upload_image():
+    if 'image' not in request.files:
+        return jsonify({"error": "No image file found"}), 400
+    
+    image_file = request.files['image']
+    image_id = mongo.create_image({"image": image_file.read()})
+    
+    return jsonify({"message": "Image uploaded", "image_id": str(image_id)}), 200
 
 @app.route('/userdate', methods=['POST'])
 def userdate():
     if not request.json:
         return jsonify({"error": "No data sent"}), 400
-    data = request.get_json()
-    fullname = data.get('fullname')
-    date_of_death = data.get('date_of_death')
-    date_next = data.get('date_next')
-    date_reminder = data.get('date_reminder')
-    user_id = data.get('user_id')
-    if None in [fullname, date_of_death, date_next, date_reminder, user_id]:
-        return jsonify({"error": "Missing data fields"}), 400
-    try:
-        date_of_death = datetime.strptime(date_of_death, '%Y-%m-%d')
-        date_next = datetime.strptime(date_next, '%Y-%m-%d')
-        date_reminder = datetime.strptime(date_reminder, '%Y-%m-%d')
-    except ValueError:
-        return jsonify({"error": "Invalid date format"}), 400
+    
+    # data = request.get_json()
+    # fullname = data.get('fullname')
+    # date_of_death = data.get('date_of_death')
+    # date_next = data.get('date_next')
+    # date_reminder = data.get('date_reminder')
+    # user_id = data.get('user_id')
+    # image_id = data.get('image_id')
+    # if None in [fullname, date_of_death, date_next, date_reminder, user_id,image_id]:
+    #     return jsonify({"error": "Missing data fields"}), 400
+    # try:
+    #     date_of_death = datetime.strptime(date_of_death, '%Y-%m-%d')
+    #     date_next = datetime.strptime(date_next, '%Y-%m-%d')
+    #     date_reminder = datetime.strptime(date_reminder, '%Y-%m-%d')
+    # except ValueError:
+    #     return jsonify({"error": "Invalid date format"}), 400
     deceased_id = uuid.uuid4().hex
     doc = {
         'deceased_id': deceased_id,
@@ -48,11 +68,10 @@ def userdate():
         'date_next': date_next,
         'date_reminder': date_reminder,
         'user_id': user_id,
+        'picture': ObjectId(image_id),
         'created_at': datetime.utcnow()
     }
     collection.insert_one(doc)
-
-  
 
     return jsonify({"message": "deceased date processed"}), 200
 
@@ -104,79 +123,4 @@ if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=5020)
 
 
-    # def main():
-#     d = userDate(2010, 6, 2)
-#     d.print_dates()
-#     next_date = d.get_next_date()
-#     d.print_reminder(next_date)
-
-
-# if __name__ == "__main__":
-#     main()
-    # if not request.json:
-    #     return jsonify({"error": "No data sent"}), 400
-
-    # key = request.json.get('key')
-    # value = request.json.get('value')
-
-    # if key in data:
-    #     return jsonify({"error": "Key already exists"}), 400
-
-    # data[key] = value
-    # return jsonify({"message": f"{key} has been created."}), 201
-# @app.route('/emailverified', methods=['GET'])
-# def mail():
-
-
-#     return jsonify({"ok":"document has been created!!"}), 200
-# @app.route('/read', methods=['GET'])
-# def read():
-#     # key = request.args.get('key')
-
-#     query = {"phone":"5555555"}
-
-#     data = a1.read(query)
-#     # Use json_util.dumps to convert ObjectId to string
-#     # json.loads takes string and makes it a python object
-#     data_json = json.loads(json_util.dumps(data))
-#     #jsonify - python and converts it to json
-#     return jsonify(data_json)
-
-
-# @app.route('/update', methods=['PATCH'])
-# def update():
-#     if not request.json:
-#         return jsonify({"error": "No data sent"}), 400
-
-#     key = request.json.get('key')
-#     value = request.json.get('value')
-
-#     if key not in data:
-#         return jsonify({"error": "Key not found"}), 404
-
-#     data[key] = value
-#     return jsonify({"message": f"{key} has been updated."}), 200
-
-# @app.route('/delete', methods=['DELETE'])
-# def delete():
-#     key = request.args.get('key')
-
-#     if key not in data:
-#         return jsonify({"error": "Key not found"}), 404
-#     del data[key]
-#     return jsonify({"message": f"{key} has been deleted."}), 200
-  # datetime_str = data.get('datetime1')
-    # print(datetime_str)
-
-    # if datetime_str is None or datetime_str == "":
-    #     return jsonify({"error": "Invalid datetime format"}), 400
-
-    # try:
-    #     datetime_obj = datetime.strptime(str(datetime_str), '%Y-%m-%d')
-    # except ValueError:
-    #     return jsonify({"error": "Invalid datetime format"}), 400
-
-    # d = userDate(datetime_obj.year, datetime_obj.month, datetime_obj.day)
-    # d.print_dates()
-    # next_date = d.get_next_date()
-    # d.print_reminder(next_date)
+ 

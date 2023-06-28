@@ -20,8 +20,11 @@ class MongoDB:
 
     def delete(self, query):
         return self.collection.delete_one(query).deleted_count
-
-
+    
+    def create_images_collection(self):
+        self.images_collection = self.database["images"]
+    def create_image(self, data):
+        return self.images_collection.insert_one(data).inserted_id
 damy_dic1 = {
     "name": "adele",
     "lastname": "keinan",
