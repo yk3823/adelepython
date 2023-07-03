@@ -1,0 +1,7 @@
+- convert string to date = self.rdate = datetime.strptime(
+            datafromusercall.get('date'), "%d/%m/%Y")
+
+- convert date to string 
+   def print_dates(self):
+        x = self.rdate.strftime('%d/%m/%Y')
+        print(x)

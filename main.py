@@ -4,15 +4,12 @@ from bson import json_util
 import json
 from sendemail import Email
 from message import Message
-from date import userDate
+from handle_dates import userDate
 from datetime import datetime
 import uuid
 from pymongo import MongoClient
 from flask_cors import CORS
 from bson.objectid import ObjectId
-
-
-
 
 
 client = MongoClient('localhost', 27017)
@@ -34,18 +31,22 @@ def create_images_collection():
 def upload_image():
     if 'image' not in request.files:
         return jsonify({"error": "No image file found"}), 400
-    
+
     image_file = request.files['image']
     image_id = mongo.create_image({"image": image_file.read()})
-    
+
     return jsonify({"message": "Image uploaded", "image_id": str(image_id)}), 200
+
 
 @app.route('/userdate', methods=['POST'])
 def userdate():
     if not request.json:
         return jsonify({"error": "No data sent"}), 400
-    
-    # data = request.get_json()
+
+    data = request.get_json()
+    a1 = userDate(data)
+    date_valdiate = userDate.validate_input(data)
+    return jsonify(date_valdiate), 200
     # fullname = data.get('fullname')
     # date_of_death = data.get('date_of_death')
     # date_next = data.get('date_next')
@@ -60,18 +61,19 @@ def userdate():
     #     date_reminder = datetime.strptime(date_reminder, '%Y-%m-%d')
     # except ValueError:
     #     return jsonify({"error": "Invalid date format"}), 400
-    deceased_id = uuid.uuid4().hex
-    doc = {
-        'deceased_id': deceased_id,
-        'fullname': fullname,
-        'date_of_death': date_of_death,
-        'date_next': date_next,
-        'date_reminder': date_reminder,
-        'user_id': user_id,
-        'picture': ObjectId(image_id),
-        'created_at': datetime.utcnow()
-    }
-    collection.insert_one(doc)
+
+    # deceased_id = uuid.uuid4().hex
+    # doc = {
+    #     'deceased_id': deceased_id,
+    #     # 'fullname': fullname,
+    #     # 'date_of_death': date_of_death,
+    #     # 'date_next': date_next,
+    #     # 'date_reminder': date_reminder,
+    #     # 'user_id': user_id,
+    #     'picture': ObjectId(image_id),
+    #     'created_at': datetime.utcnow()
+    # }
+    # collection.insert_one(doc)
 
     return jsonify({"message": "deceased date processed"}), 200
 
@@ -84,14 +86,12 @@ def create():
     existing_user = a1.read({"email": email})
     if existing_user:
         error_message = "Email already exists in the system"
-        print(error_message) 
+        print(error_message)
         return jsonify({"error": "Email already exists in the system"}), 400
-       
 
     if not request.json:
         return jsonify({"error": "No data sent"}), 400
 
-   
     # print(data["user_verified"])
     print(data["email"])
     a1 = MongoDB("users")
@@ -104,7 +104,7 @@ def create():
 
     # b1 = mainEmail.Email(data["email"],"adelekeinan@gmail.com","ukwdpyraorxbqcsr")
     created_message = "Email created"
-    print(created_message) 
+    print(created_message)
     return jsonify({"ok": "document has been created!!"}), 200
 
 
@@ -121,6 +121,3 @@ def verify_email(token):
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=5020)
-
-
- 
