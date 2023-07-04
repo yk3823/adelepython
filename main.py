@@ -17,7 +17,9 @@ db = client['memorial_site']
 collection = db['deceased']
 mongo = MongoDB(collection="users")
 app = Flask(__name__)
-CORS(app)
+cors = CORS(app)
+# cors = CORS(app, origins='http://localhost:5173')
+
 data = {}
 
 
@@ -45,44 +47,25 @@ def userdate():
 
     data = request.get_json()
     a1 = userDate(data)
-    date_valdiate = userDate.validate_input(data)
-    return jsonify(date_valdiate), 200
-    # fullname = data.get('fullname')
-    # date_of_death = data.get('date_of_death')
-    # date_next = data.get('date_next')
-    # date_reminder = data.get('date_reminder')
-    # user_id = data.get('user_id')
-    # image_id = data.get('image_id')
-    # if None in [fullname, date_of_death, date_next, date_reminder, user_id,image_id]:
-    #     return jsonify({"error": "Missing data fields"}), 400
-    # try:
-    #     date_of_death = datetime.strptime(date_of_death, '%Y-%m-%d')
-    #     date_next = datetime.strptime(date_next, '%Y-%m-%d')
-    #     date_reminder = datetime.strptime(date_reminder, '%Y-%m-%d')
-    # except ValueError:
-    #     return jsonify({"error": "Invalid date format"}), 400
 
-    # deceased_id = uuid.uuid4().hex
-    # doc = {
-    #     'deceased_id': deceased_id,
-    #     # 'fullname': fullname,
-    #     # 'date_of_death': date_of_death,
-    #     # 'date_next': date_next,
-    #     # 'date_reminder': date_reminder,
-    #     # 'user_id': user_id,
-    #     'picture': ObjectId(image_id),
-    #     'created_at': datetime.utcnow()
-    # }
-    # collection.insert_one(doc)
+    print("Foreign date and Hebrew date:", a1.print_dates())
+    next_date = a1.get_next_date()
+    print("Next year and next Hebrew year:", next_date)
 
-    return jsonify({"message": "deceased date processed"}), 200
+    date_valdiate = a1.validate_input()
+
+    if 'error' in date_valdiate:
+        return jsonify(date_valdiate), 400
+    else:
+        return jsonify(date_valdiate), 200
 
 
 @app.route('/create', methods=['POST'])
 def create():
+
     data = request.get_json()
     email = data.get("email")
-    a1 = MongoDB("users")
+    a1 = MongoDB("users").create(data)
     existing_user = a1.read({"email": email})
     if existing_user:
         error_message = "Email already exists in the system"

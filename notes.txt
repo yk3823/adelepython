@@ -5,3 +5,9 @@
    def print_dates(self):
         x = self.rdate.strftime('%d/%m/%Y')
         print(x)
+if any(key in my_dict and my_dict[key] is None for key in ['fullname', 'date_of_death', 'date_next', 'date_reminder', 'user_id', 'image_id']):
+    # Handle the case where at least one of the keys is None
+    ...
+else:
+    # Handle the case where none of the keys are None
+    ...
