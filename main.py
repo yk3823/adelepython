@@ -62,12 +62,12 @@ def userdate():
 
 @app.route('/create', methods=['POST'])
 def create():
-
     data = request.get_json()
     email = data.get("email")
-    a1 = MongoDB("users").create(data)
-    existing_user = a1.read({"email": email})
-    if existing_user:
+    a1 = MongoDB("users")
+    querytoemail = a1.read({"email": email})
+
+    if querytoemail:
         error_message = "Email already exists in the system"
         print(error_message)
         return jsonify({"error": "Email already exists in the system"}), 400
@@ -78,14 +78,14 @@ def create():
     # print(data["user_verified"])
     print(data["email"])
     a1 = MongoDB("users")
-    b1 = Email(data["email"], "adelekeinan@gmail.com", "ukwdpyraorxbqcsr")
-    d1 = userDate(datetime.strptime(data['date'], '%Y/%m/%d'))
+    b1 = Email(data["email"], "adelekeinan@gmail.com", "voacfoofzkdckeao")
+    # d1 = userDate(datetime.strptime(data['date'], '%Y/%m/%d'))
 
     c1 = Message(data["email"], "hello").getMessage()
     b1.send_email(c1["subject"], c1["message"])
     a1.create(data)
 
-    # b1 = mainEmail.Email(data["email"],"adelekeinan@gmail.com","ukwdpyraorxbqcsr")
+    # b1 = mainEmail.Email(data["email"],"adelekeinan@gmail.com","voacfoofzkdckeao")
     created_message = "Email created"
     print(created_message)
     return jsonify({"ok": "document has been created!!"}), 200

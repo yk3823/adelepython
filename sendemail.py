@@ -5,7 +5,6 @@ from email.mime.text import MIMEText
 
 
 class Email:
-    # use 465 for SSL
     def __init__(self, to_addr, username, password, smtp_port=587, smtp_server="smtp.gmail.com"):
         self.to_addr = to_addr
         self.username = username
@@ -33,7 +32,9 @@ class Email:
 
         except Exception as e:
             print(f"An error occurred: {e}")
-    
+
+
 #### Test ####
-# a1 = Email("adelkenan53@gmail.com","adelekeinan@gmail.com","ukwdpyraorxbqcsr")
-# a1.send_email("subject","hello")
+# a1 = Email("adelkenan53@gmail.com",
+#            "adelekeinan@gmail.com", "ukwdpyraorxbqcsr")
+# a1.send_email("subject", "hello")

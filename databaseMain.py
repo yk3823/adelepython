@@ -20,51 +20,50 @@ class MongoDB:
 
     def delete(self, query):
         return self.collection.delete_one(query).deleted_count
-    
+
     def create_images_collection(self):
         self.images_collection = self.database["images"]
+
     def create_image(self, data):
         return self.images_collection.insert_one(data).inserted_id
-damy_dic1 = {
-    "name": "adele",
-    "lastname": "keinan",
-    "email": "adelekeinan@gmail.com",
-    "phone": "0535319985",
-    "date": "01/02/2023",
-    "reletives": [
-        {"name": "yosef", "relationid": "123"},
-        {"name": "hava", "relationid": "4646"},
-        {"name": "rivka", "relationid": "111"}
-    ]
+# damy_dic1 = {
+#     "name": "adele",
+#     "lastname": "keinan",
+#     "email": "adelekeinan@gmail.com",
+#     "phone": "0535319985",
+#     "date": "01/02/2023",
+#     "reletives": [
+#         {"name": "yosef", "relationid": "123"},
+#         {"name": "hava", "relationid": "4646"},
+#         {"name": "rivka", "relationid": "111"}
+#     ]
 
-}
-damy_dic2 = {
-    "name": "Rout",
-    "lastname": "tzadok",
-    "email": "rt123@example.com",
-    "phone": "0523456789",
-    "date": "01/03/2023",
-    "relatives": [
-        {"name": "Avi", "relationid": "321"},
-        {"name": "Yvi", "relationid": "654"},
-        {"name": "Zvi", "relationid": "987"}
-    ]
-}
-mongo = MongoDB(collection="users")
-
-
-user1_id = mongo.create(damy_dic1)
-for relative in damy_dic1["reletives"]:
-    relative['user_id'] = str(user1_id) 
-    mongo.create(relative)
+# }
+# damy_dic2 = {
+#     "name": "Rout",
+#     "lastname": "tzadok",
+#     "email": "rt123@example.com",
+#     "phone": "0523456789",
+#     "date": "01/03/2023",
+#     "relatives": [
+#         {"name": "Avi", "relationid": "321"},
+#         {"name": "Yvi", "relationid": "654"},
+#         {"name": "Zvi", "relationid": "987"}
+#     ]
+# }
+# mongo = MongoDB(collection="users")
 
 
-user2_id = mongo.create(damy_dic2)
-for relative in damy_dic2["relatives"]:
-    relative['user_id'] = str(user2_id) 
-    mongo.create(relative)
+# user1_id = mongo.create(damy_dic1)
+# for relative in damy_dic1["reletives"]:
+#     relative['user_id'] = str(user1_id)
+#     mongo.create(relative)
 
 
+# user2_id = mongo.create(damy_dic2)
+# for relative in damy_dic2["relatives"]:
+#     relative['user_id'] = str(user2_id)
+#     mongo.create(relative)
 
 
 # a1 = MongoDB("praying")
@@ -75,7 +74,7 @@ for relative in damy_dic2["relatives"]:
 #         print(f"{dict}")
 #     else:
 #         print("not found")
-    
+
 # a1 = MongoDB("users")
 # query = {"phone":"5555555"}
 # data = a1.read(query)
