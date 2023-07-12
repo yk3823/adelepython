@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, redirect
 from databaseMain import MongoDB
 from bson import json_util
 import json
@@ -10,6 +10,8 @@ import uuid
 from pymongo import MongoClient
 from flask_cors import CORS
 from bson.objectid import ObjectId
+from pymongo import MongoClient
+from gridfs import GridFS
 
 
 client = MongoClient('localhost', 27017)
@@ -18,6 +20,7 @@ collection = db['deceased']
 mongo = MongoDB(collection="users")
 app = Flask(__name__)
 cors = CORS(app)
+fs = GridFS(db)
 # cors = CORS(app, origins='http://localhost:5173')
 
 data = {}
@@ -33,11 +36,15 @@ def create_images_collection():
 def upload_image():
     if 'image' not in request.files:
         return jsonify({"error": "No image file found"}), 400
+    # client = MongoClient('localhost', 27017)
+    # db = client['memorial_site']
+    # fs = GridFS(db)
 
     image_file = request.files['image']
-    image_id = mongo.create_image({"image": image_file.read()})
+    image_id = fs.put(image_file)
+    image_id_str = str(image_id)
 
-    return jsonify({"message": "Image uploaded", "image_id": str(image_id)}), 200
+    return jsonify({"message": "Image uploaded", "image_id": str(image_id_str)}), 200
 
 
 @app.route('/userdate', methods=['POST'])
@@ -83,6 +90,10 @@ def create():
 
     c1 = Message(data["email"], "hello").getMessage()
     b1.send_email(c1["subject"], c1["message"])
+    if 'photo' in data:
+        image_id = data['photo']
+        data['photo'] = fs.get(ObjectId(image_id))
+
     a1.create(data)
 
     # b1 = mainEmail.Email(data["email"],"adelekeinan@gmail.com","voacfoofzkdckeao")
@@ -96,10 +107,23 @@ def verify_email(token):
     email = token
     a1 = MongoDB("users")
     a1.update({"email": email}, {"user_verified": True})
+    redirect_url = "http://localhost:5173/verify?token=" + token
+
     if a1.read({"email": email, "user_verified": True}):
-        return jsonify({"message": f"Email has been verified with token {token}! You can now add a deceased person on the site."}), 200
+        # return jsonify({"message": f"Email has been verified with token {token}! You can now add a deceased person on the site.", "redirect_url": redirect_url}), 200
+        return redirect(redirect_url, code=302)
+
     else:
         return jsonify({"error": "Invalid token or email not verified."}), 400
+
+
+@app.route('/deceased', methods=['POST'])
+def save_deceased_details():
+    data = request.get_json()
+    a1 = MongoDB("deceased")
+    a1.create(data)
+
+    return jsonify({"message": "Deceased details saved"}), 200
 
 
 if __name__ == '__main__':

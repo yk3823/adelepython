@@ -22,7 +22,7 @@ class User:
 
 
 class Deceased:
-    def __init__(self, fullname: str, date_of_death: datetime, date_next: datetime, date_reminder: datetime, user_id: str,picture:str):
+    def __init__(self, fullname: str, date_of_death: datetime, date_next: datetime, date_reminder: datetime, user_id: str, picture: str):
         self.deceased_id = uuid.uuid4().hex
         self.fullname = fullname
         self.date_of_death = date_of_death

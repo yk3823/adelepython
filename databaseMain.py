@@ -26,6 +26,7 @@ class MongoDB:
 
     def create_image(self, data):
         return self.images_collection.insert_one(data).inserted_id
+
 # damy_dic1 = {
 #     "name": "adele",
 #     "lastname": "keinan",

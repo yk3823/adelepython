@@ -65,15 +65,15 @@ class userDate:
         except ValueError:
             return jsonify({"error": "Invalid date format"})
 
-        deceased_id = uuid.uuid4().hex
-        doc = {
-            'deceased_id': deceased_id,
-            'fullname': fullname,
-            'date_of_death': date_of_death,
-            'date_next': date_next,
-            'date_reminder': date_reminder,
-            'user_id': user_id,
-            'picture': ObjectId(self.image_id),
-            'created_at': datetime.utcnow()
-        }
-        collections.insert_one(doc)
+        # deceased_id = uuid.uuid4().hex
+        # doc = {
+        #     'deceased_id': deceased_id,
+        #     'fullname': fullname,
+        #     'date_of_death': date_of_death,
+        #     'date_next': date_next,
+        #     'date_reminder': date_reminder,
+        #     'user_id': user_id,
+        #     'picture': ObjectId(self.image_id),
+        #     'created_at': datetime.utcnow()
+        # }
+        # collections.insert_one(doc)
