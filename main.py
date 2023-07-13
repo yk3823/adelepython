@@ -12,6 +12,7 @@ from flask_cors import CORS
 from bson.objectid import ObjectId
 from pymongo import MongoClient
 from gridfs import GridFS
+import base64
 
 
 client = MongoClient('localhost', 27017)
@@ -32,19 +33,19 @@ def create_images_collection():
     return jsonify({"message": "Images collection created"}), 200
 
 
-@app.route('/upload_image', methods=['POST'])
-def upload_image():
-    if 'image' not in request.files:
-        return jsonify({"error": "No image file found"}), 400
-    # client = MongoClient('localhost', 27017)
-    # db = client['memorial_site']
-    # fs = GridFS(db)
+# @app.route('/upload_image', methods=['POST'])
+# def upload_image():
+#     if 'image' not in request.files:
+#         return jsonify({"error": "No image file found"}), 400
+#     # client = MongoClient('localhost', 27017)
+#     # db = client['memorial_site']
+#     # fs = GridFS(db)
 
-    image_file = request.files['image']
-    image_id = fs.put(image_file)
-    image_id_str = str(image_id)
+#     image_file = request.files['image']
+#     image_id = fs.put(image_file)
+#     image_id_str = str(image_id)
 
-    return jsonify({"message": "Image uploaded", "image_id": str(image_id_str)}), 200
+#     return jsonify({"message": "Image uploaded", "image_id": str(image_id_str)}), 200
 
 
 @app.route('/userdate', methods=['POST'])
@@ -119,11 +120,26 @@ def verify_email(token):
 
 @app.route('/deceased', methods=['POST'])
 def save_deceased_details():
-    data = request.get_json()
-    a1 = MongoDB("deceased")
-    a1.create(data)
+    name = request.form.get('name')
+    dateOfDeath = request.form.get('dateOfDeath')
+    if 'photo' in request.files:
+        photo_file = request.files['photo']
+        photo_data = photo_file.read()
 
-    return jsonify({"message": "Deceased details saved"}), 200
+        # Save photo data to MongoDB GridFS
+        photo_id = fs.put(photo_data)
+
+        collection = db['deceased']
+        collection.insert_one({
+            'name': name,
+            'dateOfDeath': dateOfDeath,
+            'photo_id': photo_id
+        })
+
+        return jsonify({"message": "Deceased details saved"}), 200
+
+    # data = request.get_json()
+    # print(type(data), data)
 
 
 if __name__ == '__main__':
