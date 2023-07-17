@@ -14,16 +14,15 @@ from pymongo import MongoClient
 from gridfs import GridFS
 import base64
 
-
-client = MongoClient('localhost', 27017)
-db = client['memorial_site']
+MONGODB_URI = "mongodb+srv://adelekeinan:J0seph123%21@clusteradele.thiqpjx.mongodb.net/"
+DATABASE_NAME = "projectdb"
+client = MongoClient(MONGODB_URI)
+db = client[DATABASE_NAME]
 collection = db['deceased']
 mongo = MongoDB(collection="users")
 app = Flask(__name__)
 cors = CORS(app)
 fs = GridFS(db)
-# cors = CORS(app, origins='http://localhost:5173')
-
 data = {}
 
 
@@ -97,7 +96,6 @@ def create():
 
     a1.create(data)
 
-    # b1 = mainEmail.Email(data["email"],"adelekeinan@gmail.com","voacfoofzkdckeao")
     created_message = "Email created"
     print(created_message)
     return jsonify({"ok": "document has been created!!"}), 200
@@ -122,10 +120,11 @@ def verify_email(token):
 def save_deceased_details():
     name = request.form.get('name')
     dateOfDeath = request.form.get('dateOfDeath')
+
     if 'photo' in request.files:
         photo_file = request.files['photo']
         photo_data = photo_file.read()
-
+        print(photo_data)
         # Save photo data to MongoDB GridFS
         photo_id = fs.put(photo_data)
 
@@ -134,12 +133,12 @@ def save_deceased_details():
             'name': name,
             'dateOfDeath': dateOfDeath,
             'photo_id': photo_id
+
         })
+        print(db)
 
         return jsonify({"message": "Deceased details saved"}), 200
-
-    # data = request.get_json()
-    # print(type(data), data)
+    return jsonify({"error": "No photo found"}), 400
 
 
 if __name__ == '__main__':
