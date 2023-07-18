@@ -118,6 +118,11 @@ def verify_email(token):
 
 @app.route('/deceased', methods=['POST'])
 def save_deceased_details():
+    useremail = request.form.get('token')
+    a1 = MongoDB("users")
+    b1 = MongoDB("deceased")
+    # result = b1.return_one_value({"email": useremail})
+
     name = request.form.get('name')
     dateOfDeath = request.form.get('dateOfDeath')
 
@@ -128,14 +133,16 @@ def save_deceased_details():
         # Save photo data to MongoDB GridFS
         photo_id = fs.put(photo_data)
 
-        collection = db['deceased']
-        collection.insert_one({
+        deceased_dict = {
             'name': name,
             'dateOfDeath': dateOfDeath,
             'photo_id': photo_id
+        }
+        res_deceasedId = b1.create(deceased_dict)
+        print(res_deceasedId)
 
-        })
-        print(db)
+        a1.update({"email": useremail},
+                  {"deceased": res_deceasedId})
 
         return jsonify({"message": "Deceased details saved"}), 200
     return jsonify({"error": "No photo found"}), 400

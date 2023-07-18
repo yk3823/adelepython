@@ -27,6 +27,10 @@ class MongoDB:
     def create_image(self, data):
         return self.images_collection.insert_one(data).inserted_id
 
+    def return_one_value(self, query={}):
+        cursor = self.collection.find(query, {"_id": 1})
+        return list(cursor)
+
 # damy_dic1 = {
 #     "name": "adele",
 #     "lastname": "keinan",
