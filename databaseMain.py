@@ -31,6 +31,13 @@ class MongoDB:
         cursor = self.collection.find(query, {"_id": 1})
         return list(cursor)
 
+    def find_one(self, query):
+        return self.collection.find_one(query)
+
+    def update_array(self, query, arr):
+        return self.collection.update_one(query, {"$push": {"deceased": {"$each": arr}}})
+
+
 # damy_dic1 = {
 #     "name": "adele",
 #     "lastname": "keinan",

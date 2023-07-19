@@ -141,8 +141,10 @@ def save_deceased_details():
         res_deceasedId = b1.create(deceased_dict)
         print(res_deceasedId)
 
-        a1.update({"email": useremail},
-                  {"deceased": res_deceasedId})
+        querY = {"email": useremail}
+        deceasedId = [res_deceasedId]
+
+        a1.update_array(querY, deceasedId)
 
         return jsonify({"message": "Deceased details saved"}), 200
     return jsonify({"error": "No photo found"}), 400
