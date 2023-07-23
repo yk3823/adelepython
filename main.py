@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify, redirect
+from flask import Flask, make_response, request, jsonify, redirect, Response
 from databaseMain import MongoDB
 from bson import json_util
 import json
@@ -148,6 +148,23 @@ def save_deceased_details():
 
         return jsonify({"message": "Deceased details saved"}), 200
     return jsonify({"error": "No photo found"}), 400
+
+
+@app.route('/get_deceased_details', methods=['GET'])
+def get_deceased_details():
+    a1 = MongoDB("deceased")
+    deceased_details = a1.read()
+
+    return json_util.dumps(deceased_details), 200
+
+
+@app.route('/get_image/<image_id>', methods=['GET'])
+def get_image(image_id):
+    fs = GridFS(db)
+    image = fs.get(ObjectId(image_id))
+    response = make_response(image.read())
+    response.headers.set('Content-Type', 'image/jpeg')
+    return response
 
 
 if __name__ == '__main__':
