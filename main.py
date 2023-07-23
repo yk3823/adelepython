@@ -152,19 +152,42 @@ def save_deceased_details():
 
 @app.route('/get_deceased_details', methods=['GET'])
 def get_deceased_details():
+    alldec = []
+
     a1 = MongoDB("deceased")
     deceased_details = a1.read()
-
-    return json_util.dumps(deceased_details), 200
-
-
-@app.route('/get_image/<image_id>', methods=['GET'])
-def get_image(image_id):
+    # p1 = MongoDB(collection="fs.files")
     fs = GridFS(db)
-    image = fs.get(ObjectId(image_id))
-    response = make_response(image.read())
-    response.headers.set('Content-Type', 'image/jpeg')
-    return response
+    # p1 = db["fs.files"]
+    for result in deceased_details:
+        print(f"*************{result['photo_id']}")
+        if 'photo_id' in result:
+            print(result['name'])
+            # queryforimage = {result['photo_id']}
+            image = fs.get(result['photo_id'])
+            # Encodes the image to base64 and then decodes it to a string
+            encoded_image = base64.b64encode(image.read()).decode('ascii')
+
+            # response = make_response(image.read())
+            # response.headers.set('Content-Type', 'image/jpeg')
+
+            data = {
+                'name': result['name'],
+                'photo_id': encoded_image
+            }
+            alldec.append(data)
+
+    return jsonify(alldec), 200
+
+
+# @app.route('/get_image/<image_id>', methods=['GET'])
+# def get_image(image_id):
+#     print(f"sdkfhskjdfhakjfhjks{image_id}")
+#     fs = GridFS(db)
+#     image = fs.get(ObjectId("64bd40b8a0126f12580983ce"))
+#     response = make_response(image.read())
+#     response.headers.set('Content-Type', 'image/jpeg')
+#     return response
 
 
 if __name__ == '__main__':
