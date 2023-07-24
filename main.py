@@ -150,44 +150,59 @@ def save_deceased_details():
     return jsonify({"error": "No photo found"}), 400
 
 
+def get_day_and_month(date_str):
+    date_obj = datetime.strptime(date_str, '%Y-%m-%d')
+    return date_obj.month, date_obj.day
+
+
 @app.route('/get_deceased_details', methods=['GET'])
 def get_deceased_details():
     alldec = []
 
     a1 = MongoDB("deceased")
     deceased_details = a1.read()
-    # p1 = MongoDB(collection="fs.files")
     fs = GridFS(db)
-    # p1 = db["fs.files"]
+    current_month, current_day = get_day_and_month(
+        datetime.now().strftime('%Y-%m-%d'))
+    positive_differences = []
+    negative_differences = []
     for result in deceased_details:
-        print(f"*************{result['photo_id']}")
-        if 'photo_id' in result:
-            print(result['name'])
-            # queryforimage = {result['photo_id']}
-            image = fs.get(result['photo_id'])
-            # Encodes the image to base64 and then decodes it to a string
-            encoded_image = base64.b64encode(image.read()).decode('ascii')
 
-            # response = make_response(image.read())
-            # response.headers.set('Content-Type', 'image/jpeg')
+        if 'photo_id' in result:
+            # print(result['name'])
+            image = fs.get(result['photo_id'])
+            encoded_image = base64.b64encode(image.read()).decode('ascii')
+            deceased_month, deceased_day = get_day_and_month(
+                result['dateOfDeath'])
+            difference = ((datetime(2000, deceased_month, deceased_day) -
+                           datetime(2000, current_month, current_day)).days)
 
             data = {
                 'name': result['name'],
-                'photo_id': encoded_image
+                'photo_id': encoded_image,
+                'difference': difference,
+                'dateOfDeath': result['dateOfDeath']
+
             }
             alldec.append(data)
+            # print(deceased_day, deceased_month)
+            # print(current_day, current_month)
+
+            if difference > 0:
+                positive_differences.append(difference)
+            else:
+                negative_differences.append(difference)
+        positive_differences.sort()
+        negative_differences.sort()
+        sorted_differences = positive_differences + negative_differences
+
+        alldec = sorted(
+            alldec, key=lambda x: sorted_differences.index(x['difference']))
+
+    print(sorted_differences)
+    # print("Sorted alldec:", alldec)
 
     return jsonify(alldec), 200
-
-
-# @app.route('/get_image/<image_id>', methods=['GET'])
-# def get_image(image_id):
-#     print(f"sdkfhskjdfhakjfhjks{image_id}")
-#     fs = GridFS(db)
-#     image = fs.get(ObjectId("64bd40b8a0126f12580983ce"))
-#     response = make_response(image.read())
-#     response.headers.set('Content-Type', 'image/jpeg')
-#     return response
 
 
 if __name__ == '__main__':
