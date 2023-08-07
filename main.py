@@ -1,4 +1,5 @@
 from flask import Flask, make_response, request, jsonify, redirect, Response
+import pymongo
 from databaseMain import MongoDB
 from bson import json_util
 import json
@@ -23,6 +24,7 @@ mongo = MongoDB(collection="users")
 app = Flask(__name__)
 cors = CORS(app)
 fs = GridFS(db)
+ITEMS_PER_PAGE = 6
 data = {}
 
 
@@ -157,17 +159,18 @@ def get_day_and_month(date_str):
 
 @app.route('/get_deceased_details', methods=['GET'])
 def get_deceased_details():
+    page = int(request.args.get('page', 1))
     alldec = []
-
     a1 = MongoDB("deceased")
-    deceased_details = a1.read()
+    skip_records = (page - 1) * ITEMS_PER_PAGE
+    deceased_details = a1.read(
+        skip=skip_records, limit=ITEMS_PER_PAGE, sort=[("dateOfDeath", 1)])
     fs = GridFS(db)
     current_month, current_day = get_day_and_month(
         datetime.now().strftime('%Y-%m-%d'))
     positive_differences = []
     negative_differences = []
     for result in deceased_details:
-
         if 'photo_id' in result:
             # print(result['name'])
             image = fs.get(result['photo_id'])
@@ -185,8 +188,6 @@ def get_deceased_details():
 
             }
             alldec.append(data)
-            # print(deceased_day, deceased_month)
-            # print(current_day, current_month)
 
             if difference > 0:
                 positive_differences.append(difference)
@@ -199,10 +200,20 @@ def get_deceased_details():
         alldec = sorted(
             alldec, key=lambda x: sorted_differences.index(x['difference']))
 
-    print(sorted_differences)
-    # print("Sorted alldec:", alldec)
+        total_items = a1.count()
+        total_pages = -(-total_items // ITEMS_PER_PAGE)
 
-    return jsonify(alldec), 200
+    return jsonify({
+        'current_page': page,
+        'total_pages': total_pages,
+        'items_per_page': ITEMS_PER_PAGE,
+        'total_items': total_items,
+        'deceased_details': alldec
+    }), 200
+
+    # print(sorted_differences)
+
+    # return jsonify(alldec), 200
 
 
 if __name__ == '__main__':
