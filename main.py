@@ -34,21 +34,6 @@ def create_images_collection():
     return jsonify({"message": "Images collection created"}), 200
 
 
-# @app.route('/upload_image', methods=['POST'])
-# def upload_image():
-#     if 'image' not in request.files:
-#         return jsonify({"error": "No image file found"}), 400
-#     # client = MongoClient('localhost', 27017)
-#     # db = client['memorial_site']
-#     # fs = GridFS(db)
-
-#     image_file = request.files['image']
-#     image_id = fs.put(image_file)
-#     image_id_str = str(image_id)
-
-#     return jsonify({"message": "Image uploaded", "image_id": str(image_id_str)}), 200
-
-
 @app.route('/userdate', methods=['POST'])
 def userdate():
     if not request.json:
@@ -84,12 +69,9 @@ def create():
     if not request.json:
         return jsonify({"error": "No data sent"}), 400
 
-    # print(data["user_verified"])
     print(data["email"])
     a1 = MongoDB("users")
     b1 = Email(data["email"], "adelekeinan@gmail.com", "voacfoofzkdckeao")
-    # d1 = userDate(datetime.strptime(data['date'], '%Y/%m/%d'))
-
     c1 = Message(data["email"], "hello").getMessage()
     b1.send_email(c1["subject"], c1["message"])
     if 'photo' in data:
@@ -111,7 +93,6 @@ def verify_email(token):
     redirect_url = "http://localhost:5173/verify?token=" + token
 
     if a1.read({"email": email, "user_verified": True}):
-        # return jsonify({"message": f"Email has been verified with token {token}! You can now add a deceased person on the site.", "redirect_url": redirect_url}), 200
         return redirect(redirect_url, code=302)
 
     else:
@@ -123,7 +104,6 @@ def save_deceased_details():
     useremail = request.form.get('token')
     a1 = MongoDB("users")
     b1 = MongoDB("deceased")
-    # result = b1.return_one_value({"email": useremail})
 
     name = request.form.get('name')
     dateOfDeath = request.form.get('dateOfDeath')
@@ -137,9 +117,10 @@ def save_deceased_details():
 
         deceased_dict = {
             'name': name,
-            'dateOfDeath': dateOfDeath,
+            'dateOfDeath': datetime.strptime(dateOfDeath, '%Y-%m-%d'),
             'photo_id': photo_id
         }
+
         res_deceasedId = b1.create(deceased_dict)
         print(res_deceasedId)
 
@@ -153,7 +134,13 @@ def save_deceased_details():
 
 
 def get_day_and_month(date_str):
-    date_obj = datetime.strptime(date_str, '%Y-%m-%d')
+    if isinstance(date_str, str):
+        date_obj = datetime.strptime(date_str, '%Y-%m-%d')
+    elif isinstance(date_str, datetime):
+        date_obj = date_str
+    else:
+        raise TypeError(
+            "Input should be either string in '%Y-%m-%d' format or a datetime object.")
     return date_obj.month, date_obj.day
 
 
@@ -184,7 +171,7 @@ def get_deceased_details():
                 'name': result['name'],
                 'photo_id': encoded_image,
                 'difference': difference,
-                'dateOfDeath': result['dateOfDeath']
+                'dateOfDeath': datetime.strftime(result['dateOfDeath'], '%Y-%m-%d')
 
             }
             alldec.append(data)
