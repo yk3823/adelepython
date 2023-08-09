@@ -14,6 +14,8 @@ from bson.objectid import ObjectId
 from pymongo import MongoClient
 from gridfs import GridFS
 import base64
+from pyluach import dates
+
 
 MONGODB_URI = "mongodb+srv://adelekeinan:J0seph123%21@clusteradele.thiqpjx.mongodb.net/"
 DATABASE_NAME = "projectdb"
@@ -133,62 +135,75 @@ def save_deceased_details():
     return jsonify({"error": "No photo found"}), 400
 
 
-def get_day_and_month(date_str):
-    if isinstance(date_str, str):
-        date_obj = datetime.strptime(date_str, '%Y-%m-%d')
-    elif isinstance(date_str, datetime):
-        date_obj = date_str
-    else:
-        raise TypeError(
-            "Input should be either string in '%Y-%m-%d' format or a datetime object.")
-    return date_obj.month, date_obj.day
-
-
 @app.route('/get_deceased_details', methods=['GET'])
 def get_deceased_details():
     page = int(request.args.get('page', 1))
-    alldec = []
-    a1 = MongoDB("deceased")
     skip_records = (page - 1) * ITEMS_PER_PAGE
-    deceased_details = a1.read(
-        skip=skip_records, limit=ITEMS_PER_PAGE, sort=[("dateOfDeath", 1)])
+
+    current_date = datetime.now()
+    pipeline = [
+        {
+            "$addFields": {
+                "differenceInDays": {
+                    "$subtract": [
+                        {"$dayOfYear": "$dateOfDeath"},
+                        {"$dayOfYear": current_date}
+                    ]
+                }
+            }
+        },
+        {
+            "$addFields": {
+                "isFuture": {
+                    "$cond": [
+                        {"$gte": ["$differenceInDays", 0]},
+                        1,
+                        0
+                    ]
+                }
+            }
+        },
+        {
+            "$sort": {
+                "isFuture": -1,  # prioritize future dates
+                "differenceInDays": 1
+            }
+        },
+        {
+            "$skip": skip_records
+        },
+        {
+            "$limit": ITEMS_PER_PAGE
+        },
+
+    ]
+
+    deceased_details = list(collection.aggregate(pipeline))
     fs = GridFS(db)
-    current_month, current_day = get_day_and_month(
-        datetime.now().strftime('%Y-%m-%d'))
-    positive_differences = []
-    negative_differences = []
+
+    alldec = []
     for result in deceased_details:
         if 'photo_id' in result:
-            # print(result['name'])
             image = fs.get(result['photo_id'])
             encoded_image = base64.b64encode(image.read()).decode('ascii')
-            deceased_month, deceased_day = get_day_and_month(
-                result['dateOfDeath'])
-            difference = ((datetime(2000, deceased_month, deceased_day) -
-                           datetime(2000, current_month, current_day)).days)
+
+            date_of_death = result.get('dateOfDeath')
+            hebrew_date_calculated = dates.HebrewDate.from_pydate(
+                date_of_death)
+            hebrew_date_string = hebrew_date_calculated.hebrew_date_string()
 
             data = {
                 'name': result['name'],
                 'photo_id': encoded_image,
-                'difference': difference,
-                'dateOfDeath': datetime.strftime(result['dateOfDeath'], '%Y-%m-%d')
+                'difference': result['differenceInDays'],
+                'dateOfDeath': datetime.strftime(result['dateOfDeath'], '%Y-%m-%d'),
+                'hebrew_date': hebrew_date_string
 
             }
             alldec.append(data)
 
-            if difference > 0:
-                positive_differences.append(difference)
-            else:
-                negative_differences.append(difference)
-        positive_differences.sort()
-        negative_differences.sort()
-        sorted_differences = positive_differences + negative_differences
-
-        alldec = sorted(
-            alldec, key=lambda x: sorted_differences.index(x['difference']))
-
-        total_items = a1.count()
-        total_pages = -(-total_items // ITEMS_PER_PAGE)
+    total_items = collection.count_documents({})
+    total_pages = -(-total_items // ITEMS_PER_PAGE)
 
     return jsonify({
         'current_page': page,
@@ -198,10 +213,74 @@ def get_deceased_details():
         'deceased_details': alldec
     }), 200
 
-    # print(sorted_differences)
-
-    # return jsonify(alldec), 200
-
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=5020)
+
+
+# def get_day_and_month(date_str):
+#     if isinstance(date_str, str):
+#         date_obj = datetime.strptime(date_str, '%Y-%m-%d')
+#     elif isinstance(date_str, datetime):
+#         date_obj = date_str
+#     else:
+#         raise TypeError(
+#             "Input should be either string in '%Y-%m-%d' format or a datetime object.")
+#     return date_obj.month, date_obj.day
+
+# @app.route('/get_deceased_details', methods=['GET'])
+# def get_deceased_details():
+#     page = int(request.args.get('page', 1))
+#     alldec = []
+#     a1 = MongoDB("deceased")
+#     skip_records = (page - 1) * ITEMS_PER_PAGE
+#     deceased_details = a1.read(
+#         skip=skip_records, limit=ITEMS_PER_PAGE, sort=[("dateOfDeath", 1)])
+#     fs = GridFS(db)
+#     current_month, current_day = get_day_and_month(
+#         datetime.now().strftime('%Y-%m-%d'))
+#     positive_differences = []
+#     negative_differences = []
+#     for result in deceased_details:
+#         if 'photo_id' in result:
+#             image = fs.get(result['photo_id'])
+#             encoded_image = base64.b64encode(image.read()).decode('ascii')
+#             deceased_month, deceased_day = get_day_and_month(
+#                 result['dateOfDeath'])
+#             difference = ((datetime(2000, deceased_month, deceased_day) -
+#                            datetime(2000, current_month, current_day)).days)
+
+#             data = {
+#                 'name': result['name'],
+#                 'photo_id': encoded_image,
+#                 'difference': difference,
+#                 'dateOfDeath': datetime.strftime(result['dateOfDeath'], '%Y-%m-%d')
+
+#             }
+#             alldec.append(data)
+
+#             if difference > 0:
+#                 positive_differences.append(difference)
+#             else:
+#                 negative_differences.append(difference)
+#         positive_differences.sort()
+#         negative_differences.sort()
+#         sorted_differences = positive_differences + negative_differences
+
+#         alldec = sorted(
+#             alldec, key=lambda x: sorted_differences.index(x['difference']))
+
+#     total_items = a1.count()
+#     total_pages = -(-total_items // ITEMS_PER_PAGE)
+
+#     return jsonify({
+#         'current_page': page,
+#         'total_pages': total_pages,
+#         'items_per_page': ITEMS_PER_PAGE,
+#         'total_items': total_items,
+#         'deceased_details': alldec
+#     }), 200
+
+    # print(sorted_differences)
+
+    # return jsonify(alldec), 200
