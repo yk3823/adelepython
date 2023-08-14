@@ -137,6 +137,7 @@ def save_deceased_details():
 
 @app.route('/get_deceased_details', methods=['GET'])
 def get_deceased_details():
+
     page = int(request.args.get('page', 1))
     skip_records = (page - 1) * ITEMS_PER_PAGE
 
@@ -212,6 +213,22 @@ def get_deceased_details():
         'total_items': total_items,
         'deceased_details': alldec
     }), 200
+
+
+@app.route('/login', methods=['POST'])
+def login():
+    data = request.get_json()
+
+    email = data.get('email')
+    password = data.get('password')  # This should ideally be hashed and salted
+
+    user = mongo.read({'email': email, 'password': password})
+
+    if user:
+        # You might want to return a token or some identifier for the user session
+        return jsonify({'message': 'Login successful'}), 200
+    else:
+        return jsonify({'error': 'Invalid email or password'}), 400
 
 
 if __name__ == '__main__':
