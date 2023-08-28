@@ -19,6 +19,10 @@ from pyluach import dates
 import requests
 import json
 import paypalrestsdk
+import os
+from flask import jsonify, request
+import requests
+import json
 
 
 MONGODB_URI = "mongodb+srv://adelekeinan:J0seph123%21@clusteradele.thiqpjx.mongodb.net/"
@@ -44,16 +48,11 @@ def get_access_token(client_id, client_secret):
     data = {"grant_type": "client_credentials"}
 
     response = requests.post(url, headers=headers, auth=auth, data=data)
-    print(response.json().get("access_token", None))
-    return response.json().get("access_token", None)
-
-
-# get_access_token("AX_vZcLnrEtNrNc9wK-JoHk81p4ErlRAIC_CelJpNYaRgK2ICEDjwL2_ekUfkecDDxu8l3myRpmBaJBh",
-#                  "EKLhvvxau-AOYFJ60SPfwUviLaIJe5KMac-ETQWcKxxK3-qDWjZAEUCMJI_EC86j4usi51LccvuoaE-7")
+    token = response.json().get("access_token", None)
+    return token
 
 
 def create_order(access_token, amount, return_url, cancel_url):
-    print("access:\n", access_token)
     url = "https://api.sandbox.paypal.com/v2/checkout/orders"
     headers = {
         "Content-Type": "application/json",
@@ -80,14 +79,15 @@ def create_order(access_token, amount, return_url, cancel_url):
 
 
 def main():
-    # You'd typically get these values from your application's configuration or secrets management.
+    # CLIENT_ID = os.getenv('PAYPAL_CLIENT_ID')  # Assuming you've set these in your environment
+    # CLIENT_SECRET = os.getenv('PAYPAL_CLIENT_SECRET')
+    # Assuming you've set these in your environment
     CLIENT_ID = "AX_vZcLnrEtNrNc9wK-JoHk81p4ErlRAIC_CelJpNYaRgK2ICEDjwL2_ekUfkecDDxu8l3myRpmBaJBh"
     CLIENT_SECRET = "EKLhvvxau-AOYFJ60SPfwUviLaIJe5KMac-ETQWcKxxK3-qDWjZAEUCMJI_EC86j4usi51LccvuoaE-7"
 
     access_token = get_access_token(CLIENT_ID, CLIENT_SECRET)
-    print(access_token)
     if access_token:
-        amount = 10.00  # or any desired amount
+        amount = 10.00
         return_url = "https://google.com"
         cancel_url = "https://youtube.com"
 
@@ -97,57 +97,43 @@ def main():
     else:
         print("Failed to obtain access token.")
 
-# CLIENT_ID = os.environ.get('PAYPAL_CLIENT_ID')
-# CLIENT_SECRET = os.environ.get('PAYPAL_CLIENT_SECRET')
+
+# if __name__ == "__main__":
+#     main()
 
 
-@app.route('/create_payment', methods=['POST'])
-def create_payment():
-    payment_type = request.json.get('type')
+# @app.route('/create_payment', methods=['POST'])
+# def create_payment():
+#     payment_type = request.json.get('type')
 
-    # Define the amount based on payment type. Adjust as necessary.
-    if payment_type == 'kaddish':
-        amount = 10.00
-    elif payment_type == 'tehillim':
-        amount = 5.00
-    else:
-        return jsonify({"error": "Invalid payment type"}), 400
-
-    access_token = get_access_token(CLIENT_ID, CLIENT_SECRET)
-
-    order_response = create_order(
-        access_token,
-        amount,
-        "https://google.com",
-        "https://ynet.co.il"
-    )
-
-    # Extract the approval URL for the user to complete the payment
-    approval_url = next(
-        (link.get("href") for link in order_response.get(
-            "links", []) if link.get("rel") == "approve"),
-        None
-    )
-
-    if approval_url:
-        return jsonify({"redirect_url": approval_url})
-    else:
-        return jsonify({"error": "Payment creation failed"}), 400
-
-
-# @app.route('/execute_payment', methods=['GET'])
-# def execute_payment():
-#     payment_id = request.args.get('paymentId')
-#     payer_id = request.args.get('PayerID')
-
-#     payment = paypalrestsdk.Payment.find(payment_id)
-
-#     if payment.execute({"payer_id": payer_id}):
-#         print('Payment executed successfully')
-#         return jsonify({"success": "Payment executed successfully"}), 200
+#     # Define the amount based on payment type. Adjust as necessary.
+#     if payment_type == 'kaddish':
+#         amount = 10.00
+#     elif payment_type == 'tehillim':
+#         amount = 5.00
 #     else:
-#         print(payment.error)
-#         return jsonify({"error": "Payment execution failed"}), 400
+#         return jsonify({"error": "Invalid payment type"}), 400
+
+#     access_token = get_access_token(CLIENT_ID, CLIENT_SECRET)
+
+#     order_response = create_order(
+#         access_token,
+#         amount,
+#         "https://google.com",
+#         "https://ynet.co.il"
+#     )
+
+#     # Extract the approval URL for the user to complete the payment
+#     approval_url = next(
+#         (link.get("href") for link in order_response.get(
+#             "links", []) if link.get("rel") == "approve"),
+#         None
+#     )
+
+#     if approval_url:
+#         return jsonify({"redirect_url": approval_url})
+#     else:
+#         return jsonify({"error": "Payment creation failed"}), 400
 
 
 @app.route('/create_images_collection', methods=['POST'])
